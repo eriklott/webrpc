@@ -1,0 +1,19 @@
+<%define "types"%>
+-- TYPES
+
+<% if .Messages%>
+<%- range .Messages%>
+<%- if .Type | isEnum %>
+type <%.Name%>
+<%- range $index, $element := .Fields %>
+    <% if $index | eq 0 %>=<%else%>|<%end%> <% .Name %>
+<%- end%>      
+<% end %>
+<%- if .Type | isStruct %>
+type alias <%.Name%> =
+    {<% range $index, $element := .Fields %><% commaAfterFirst $index %> <% . | exportedField %> : <% if .Optional %>Maybe <% end %><% . | fieldTypeDef %>
+    <% end -%>}
+<% end %>
+<%- end %>
+<%- end %>
+<%- end %>

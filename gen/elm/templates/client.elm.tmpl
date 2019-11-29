@@ -1,0 +1,63 @@
+<%define "client"%>
+<%- if .Services %>
+-- CLIENT
+
+<% range .Services %>
+<%- $serviceName := .Name -%>
+<%- range .Methods %>
+<%- if .Outputs%>
+type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
+    {<% range $index, $element := .Outputs %><%if ne $index 0%>,<%end%> <%if .Optional%>Maybe <%end%><%.Name%> : <% fieldType .Type %> 
+    <%end%>}  
+<%- end%>
+
+<% $serviceName.TitleDowncase %><%.Name%> : 
+    <% range $index, $element := .Inputs %>
+    <%- if $index | ne 0 %>-> <%end%><%if .Optional%>Maybe <%end%><% .Type | fieldType %>
+    <%end%>
+    
+    <%- if .Inputs%>-> <%end%>
+    
+    <%- if .Outputs -%>
+    (Result Http.Error <%$serviceName%><% .Name.TitleUpcase %>Data -> msg)
+    -> Cmd msg
+
+    <%- else -%>
+    (Result Http.Error () -> msg) 
+    -> Cmd msg
+    <%- end %> 
+<% $serviceName.TitleDowncase %><%.Name%><% range .Inputs %> <%.Name%><%end%> toMsg =
+    <%- if or .Inputs .Outputs%>
+    let
+        <%- if .Inputs%>
+        encoder =
+            Encode.object
+                [<% range $index, $element := .Inputs %><% commaAfterFirst $index %> ( "<%.Name%>", <% methodArgumentEncoderType . %> <%.Name%> )
+                <%end%>]
+        <%end%>
+        <%- if .Outputs%>
+        decoder =
+            Decode.succeed <%$serviceName%><% .Name.TitleUpcase %>Data
+            <%- range .Outputs %>
+                |> andMap (Decode.<%if .Optional%>optionalField<%else%>field<%end%> "<%.Name%>" <%.Type | decoderType%>)
+            <%- end %>              
+        <%- end%>        
+    in
+    <%- end%>
+    Http.post
+        { url = "/rpc/<%$serviceName%>/<%.Name%>"
+        <%- if .Inputs %> 
+        , body = Http.jsonBody encoder
+        <%- else %>
+        , body = Http.emptyBody
+        <%- end %>
+        <%- if .Outputs %>
+        , expect = Http.expectJson toMsg decoder
+        <%- else %>
+        , expect = Http.expectWhatever toMsg
+        <%- end %>
+        }
+<% end %>     
+<%- end %>   
+<%- end %>    
+<%- end %>    

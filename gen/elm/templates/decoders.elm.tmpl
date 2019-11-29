@@ -1,0 +1,30 @@
+<%define "decoders"%>
+-- DECODERS
+
+<% if .Messages%>
+<%- range .Messages%>
+<%- if .Type | isEnum %>
+<%.Name | messageDecoderName %> : Decoder <%.Name%>
+<%.Name | messageDecoderName %> =
+    let
+        enumDecoder s =
+            case s of
+                <%- range .Fields %>
+                "<%.Value%>" ->
+                    Decode.succeed <%.Name%>
+                <%- end%> 
+                _ ->
+                    Decode.fail ("unknown value for type <%.Name%> : '" ++ s)
+    in
+    Decode.string |> Decode.andThen enumDecoder     
+<% else if .Type | isStruct %>
+<%.Name | messageDecoderName %> : Decoder <%.Name%>
+<%.Name | messageDecoderName %> =
+    Decode.succeed <%.Name%>
+    <%- range .Fields %>
+        |> andMap (<%if .Optional%>optionalField<%else%>Decode.field<%end%> "<%. | exportedJSONField%>" <%.Type | decoderType%>)
+    <%- end %>
+<% end %>
+<%- end %>
+<%- end %>
+<%- end %>

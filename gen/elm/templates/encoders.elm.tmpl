@@ -1,0 +1,24 @@
+<%define "encoders"%>
+-- ENCODERS
+
+<% if .Messages%>
+<%- range .Messages%>
+<%- if .Type | isEnum %>
+<%.Name | messageEncoderName %> : <%.Name%> -> Encode.Value
+<%.Name | messageEncoderName %> <%.Name.TitleDowncase%> =
+    case <%.Name.TitleDowncase%> of
+    <%- range .Fields %>
+        <%.Name%> ->
+            Encode.string "<%.Value%>"
+    <%- end%> 
+<%- else if .Type | isStruct %>
+<% $messageVarName := .Name.TitleDowncase %>
+<%.Name | messageEncoderName %> : <%.Name%> -> Encode.Value
+<%.Name | messageEncoderName %> <% $messageVarName %> =
+    Encode.object
+        [<% range $index, $element := .Fields %><% commaAfterFirst $index %> ( "<% . | exportedJSONField %>", <% . | messageFieldEncoderType %> <% $messageVarName %>.<% . | exportedField %> )
+        <%end%>]
+<%- end %>
+<%- end %>
+<%- end %>
+<%- end %>

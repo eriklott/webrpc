@@ -1,0 +1,28 @@
+<%define "helpers"%>
+-- HELPERS
+
+andMap : Decoder a -> Decoder (a -> b) -> Decoder b
+andMap =
+    Decode.map2 (|>)
+
+optionalField : String -> Decoder a -> Decoder (Maybe a)
+optionalField fieldName decoder =
+    let
+        finishDecoding json =
+            case Decode.decodeValue (Decode.field fieldName Decode.value) json of
+                Ok val ->
+                    Decode.map Just (Decode.field fieldName decoder)
+
+                Err _ ->
+                    Decode.succeed Nothing
+    in
+    Decode.value
+        |> Decode.andThen finishDecoding
+
+encodeMaybe : (a -> Encode.Value) -> Maybe a -> Encode.Value
+encodeMaybe encoder =
+    Maybe.map encoder >> Maybe.withDefault Encode.null
+
+
+
+<% end %> 
