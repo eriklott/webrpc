@@ -9,10 +9,12 @@ import (
 )
 
 var fieldTypeMap = map[schema.DataType]string{
+	schema.T_Uint:      "Int",
 	schema.T_Uint8:     "Int",
 	schema.T_Uint16:    "Int",
 	schema.T_Uint32:    "Int",
 	schema.T_Uint64:    "Int",
+	schema.T_Int:       "Int",
 	schema.T_Int8:      "Int",
 	schema.T_Int16:     "Int",
 	schema.T_Int32:     "Int",
@@ -25,10 +27,12 @@ var fieldTypeMap = map[schema.DataType]string{
 }
 
 var decoderTypeMap = map[schema.DataType]string{
+	schema.T_Uint:      "int",
 	schema.T_Uint8:     "int",
 	schema.T_Uint16:    "int",
 	schema.T_Uint32:    "int",
 	schema.T_Uint64:    "int",
+	schema.T_Int:       "int",
 	schema.T_Int8:      "int",
 	schema.T_Int16:     "int",
 	schema.T_Int32:     "int",
@@ -41,10 +45,12 @@ var decoderTypeMap = map[schema.DataType]string{
 }
 
 var encoderTypeMap = map[schema.DataType]string{
+	schema.T_Uint:      "int",
 	schema.T_Uint8:     "int",
 	schema.T_Uint16:    "int",
 	schema.T_Uint32:    "int",
 	schema.T_Uint64:    "int",
+	schema.T_Int:       "int",
 	schema.T_Int8:      "int",
 	schema.T_Int16:     "int",
 	schema.T_Int32:     "int",
