@@ -7,7 +7,7 @@
 <%- range .Methods %>
 <%- if .Outputs%>
 type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
-    {<% range $index, $element := .Outputs %><%if ne $index 0%>,<%end%> <%if .Optional%>Maybe <%end%><%.Name%> : <% fieldType .Type %> 
+    {<% range $index, $element := .Outputs %><%commaAfterFirst $index%> <%if .Optional%>Maybe <%end%><%.Name | safeVarName%> : <% fieldType .Type %> 
     <%end%>}  
 <%- end%>
 
@@ -26,13 +26,13 @@ type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
     (Result Http.Error () -> msg) 
     -> Cmd msg
     <%- end %> 
-<% $serviceName.TitleDowncase %><%.Name%><% range .Inputs %> <%.Name%><%end%> toMsg =
+<% $serviceName.TitleDowncase %><%.Name%><% range .Inputs %> <%.Name | safeVarName%><%end%> toMsg =
     <%- if or .Inputs .Outputs%>
     let
         <%- if .Inputs%>
         encoder =
             Encode.object
-                [<% range $index, $element := .Inputs %><% commaAfterFirst $index %> ( "<%.Name%>", <% methodArgumentEncoderType . %> <%.Name%> )
+                [<% range $index, $element := .Inputs %><% commaAfterFirst $index %> ( "<%.Name%>", <% methodArgumentEncoderType . %> <%.Name | safeVarName%> )
                 <%end%>]
         <%end%>
         <%- if .Outputs%>

@@ -32,6 +32,22 @@ const input = `
       ]
     },
     {
+      "name": "Categories",
+      "type": "enum",
+      "fields": [
+        {
+          "name": "Fruit",
+          "type": "uint32",
+          "value": "1"
+        },
+        {
+          "name": "Pets",
+          "type": "uint32",
+          "value": "2"
+        }
+      ]
+    },    
+    {
       "name": "Empty",
       "type": "struct",
       "fields": [
@@ -87,6 +103,10 @@ const input = `
       "type": "struct",
       "fields": [
         {
+          "name": "type",
+          "type": "string"
+        },        
+        {
           "name": "namesList",
           "type": "[]string"
         },
@@ -136,6 +156,10 @@ const input = `
           "name": "GetUser",
           "inputs": [
             {
+              "name": "type",
+              "type": "string"
+            },            
+            {
               "name": "req",
               "type": "GetUserRequest"
             },
@@ -161,7 +185,11 @@ const input = `
             {
               "name": "highscore",
               "type": "int32"
-            }
+            },
+            {
+              "name": "type",
+              "type": "string"
+            }   
           ]
         },
         {

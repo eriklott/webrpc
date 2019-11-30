@@ -10,15 +10,15 @@
     <%- range .Fields %>
         <%.Name%> ->
             Encode.string "<%.Value%>"
-    <%- end%> 
+    <% end%> 
 <%- else if .Type | isStruct %>
-<% $messageVarName := .Name.TitleDowncase %>
+<%- $messageVarName := .Name.TitleDowncase %>
 <%.Name | messageEncoderName %> : <%.Name%> -> Encode.Value
 <%.Name | messageEncoderName %> <% $messageVarName %> =
     Encode.object
         [<% range $index, $element := .Fields %><% commaAfterFirst $index %> ( "<% . | exportedJSONField %>", <% . | messageFieldEncoderType %> <% $messageVarName %>.<% . | exportedField %> )
         <%end%>]
-<%- end %>
+<% end %>
 <%- end %>
 <%- end %>
 <%- end %>

@@ -212,8 +212,16 @@ func exposingDef(in *schema.WebRPCSchema) string {
 	return strings.Join(exposedNames, ", ")
 }
 
+func safeVarName(in schema.VarName) string {
+	s := string(in)
+	if s == "type" {
+		return "type_"
+	}
+	return s
+}
+
 func exportedField(in *schema.MessageField) string {
-	s := string(in.Name)
+	s := safeVarName(in.Name)
 
 	nameTag := "elm.field.name"
 	for k := range in.Meta {
@@ -248,5 +256,6 @@ var templateFuncMap = map[string]interface{}{
 	"messageEncoderName":        messageEncoderName,
 	"exposingDef":               exposingDef,
 	"exportedField":             exportedField,
+	"safeVarName":               safeVarName,
 	"commaAfterFirst":           commaAfterFirst,
 }
