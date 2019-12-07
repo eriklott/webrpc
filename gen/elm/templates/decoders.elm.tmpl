@@ -1,9 +1,9 @@
 <%define "decoders"%>
 -- DECODERS
-
 <% if .Messages%>
 <%- range .Messages%>
 <%- if .Type | isEnum %>
+<%- $enumName := .Name %>
 <%.Name | messageDecoderName %> : Decoder <%.Name%>
 <%.Name | messageDecoderName %> =
     let
@@ -11,7 +11,7 @@
             case s of
                 <%- range .Fields %>
                 "<%.Value%>" ->
-                    Decode.succeed <%.Name%>
+                    Decode.succeed <%$enumName%><%.Name%>
                 <%- end%> 
                 _ ->
                     Decode.fail ("unknown value for type <%.Name%> : '" ++ s)

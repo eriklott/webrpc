@@ -1,19 +1,18 @@
 <%define "types"%>
 -- TYPES
-
-<% if .Messages%>
+<%- if .Messages%>
 <%- range .Messages%>
-<%- if .Type | isEnum %>
-type <%.Name%>
+<% if .Type | isEnum %>
+<%- $enumName := .Name %>
+type <%$enumName%>
 <%- range $index, $element := .Fields %>
-    <% if $index | eq 0 %>=<%else%>|<%end%> <% .Name %>
-<%- end%>      
-<% end %>
-<%- if .Type | isStruct %>
+    <% if $index | eq 0 %>=<%else%>|<%end%> <%$enumName%><%.Name%>
+<%- end%>
+<%- else if .Type | isStruct %>
 type alias <%.Name%> =
     {<% range $index, $element := .Fields %><% commaAfterFirst $index %> <% . | exportedField %> : <% if .Optional %>Maybe <% end %><% . | fieldTypeDef %>
     <% end -%>}
-<% end %>
+<%- end %>
 <%- end %>
 <%- end %>
 <%- end %>

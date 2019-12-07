@@ -1,14 +1,14 @@
 <%define "encoders"%>
 -- ENCODERS
-
 <% if .Messages%>
 <%- range .Messages%>
 <%- if .Type | isEnum %>
+<%- $enumName := .Name %>
 <%.Name | messageEncoderName %> : <%.Name%> -> Encode.Value
 <%.Name | messageEncoderName %> <%.Name.TitleDowncase%> =
     case <%.Name.TitleDowncase%> of
     <%- range .Fields %>
-        <%.Name%> ->
+        <%$enumName%><%.Name%> ->
             Encode.string "<%.Value%>"
     <% end%> 
 <%- else if .Type | isStruct %>
