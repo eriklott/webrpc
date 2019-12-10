@@ -70,6 +70,9 @@ func fieldType(in *schema.VarType) (string, error) {
 		return "[]" + z, nil
 
 	case schema.T_Struct:
+		if isEnum(in.Struct.Message.Type) {
+			return in.Struct.Name, nil
+		}
 		return "*" + in.Struct.Name, nil
 
 	default:
@@ -90,6 +93,9 @@ func fieldOptional(field *schema.MessageField) (string, error) {
 	case schema.T_List:
 		return "", nil // noop
 	case schema.T_Struct:
+		if isEnum(field.Type.Struct.Message.Type) {
+			return "*", nil
+		}
 		return "", nil // noop because by default struct uses '*' prefix
 	default:
 		if fieldTypeMap[field.Type.Type] != "" {

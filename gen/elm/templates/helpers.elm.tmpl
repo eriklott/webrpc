@@ -11,7 +11,7 @@ optionalField fieldName decoder =
         finishDecoding json =
             case Decode.decodeValue (Decode.field fieldName Decode.value) json of
                 Ok val ->
-                    Decode.map Just (Decode.field fieldName decoder)
+                    Decode.field fieldName (Decode.nullable decoder)
 
                 Err _ ->
                     Decode.succeed Nothing
