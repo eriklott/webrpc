@@ -11,7 +11,7 @@ type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
     <%end%>}  
 <%- end%>
 
-<% $serviceName.TitleDowncase %><%.Name%> : 
+<% $serviceName.TitleDowncase %><%.Name%> :
     <% range $index, $element := .Inputs %>
     <%- if $index | ne 0 %>-> <%end%><%if .Optional%>Maybe <%end%><% .Type | fieldType %>
     <%end%>
@@ -49,7 +49,7 @@ type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
         <%- if .Inputs %> 
         , body = Http.jsonBody encoder
         <%- else %>
-        , body = Http.emptyBody
+        , body = Http.jsonBody (Encode.object [])
         <%- end %>
         <%- if .Outputs %>
         , expect = Http.expectJson toMsg decoder
