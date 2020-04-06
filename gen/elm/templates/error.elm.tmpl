@@ -1,0 +1,63 @@
+<%define "error"%>
+
+-- Error
+
+type Error
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Int ErrorResponse
+    | BadBody String
+
+type alias ErrorResponse =
+    { status : Int
+    , code : String
+    , cause : Maybe String
+    , msg : String
+    , error : String
+    }
+
+errorResponseDecoder : Decoder ErrorResponse
+errorResponseDecoder =
+    Decode.succeed ErrorResponse
+        |> andMap (Decode.field "status" Decode.int)
+        |> andMap (Decode.field "code" Decode.string)
+        |> andMap (decodeOptionalField "cause" Decode.string)
+        |> andMap (Decode.field "msg" Decode.string)
+        |> andMap (Decode.field "error" Decode.string)
+
+expectJson : (Result Error a -> msg) -> Decoder a -> Http.Expect msg
+expectJson toMsg decoder =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadUrl_ url ->
+                    Err (BadUrl url)
+
+                Http.Timeout_ ->
+                    Err Timeout
+
+                Http.NetworkError_ ->
+                    Err NetworkError
+
+                Http.BadStatus_ metadata body ->
+                    case Decode.decodeString errorResponseDecoder body of
+                        Ok errorResponse ->
+                            Err (BadStatus metadata.statusCode errorResponse)
+
+                        Err err ->
+                            Err (BadBody (Decode.errorToString err))
+
+                Http.GoodStatus_ metadata body ->
+                    case Decode.decodeString decoder body of
+                        Ok value ->
+                            Ok value
+
+                        Err err ->
+                            Err (BadBody (Decode.errorToString err))
+
+
+
+<%- end %>
+
+

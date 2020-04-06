@@ -1,6 +1,25 @@
 <%define "client"%>
 <%- if .Services %>
+
 -- CLIENT
+
+request
+    : ConfigModel
+    -> { method : String
+       , headers : List Http.Header
+       , url : String
+       , body : Http.Body
+       , expect : Http.Expect msg
+       , timeout : Maybe Float
+       , tracker : Maybe String
+       }
+    -> Cmd msg
+request config =
+    if config.withCredentials then
+        Http.riskyRequest
+    else
+        Http.request
+
 
 <% range .Services %>
 <%- $serviceName := .Name -%>
@@ -12,21 +31,22 @@ type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
 <%- end%>
 
 <% $serviceName.TitleDowncase %><%.Name%> :
-    <% range $index, $element := .Inputs %>
+    Config
+    -> <% range $index, $element := .Inputs %>
     <%- if $index | ne 0 %>-> <%end%><%if .Optional%>Maybe <%end%><% .Type | fieldType %>
     <%end%>
     
     <%- if .Inputs%>-> <%end%>
     
     <%- if .Outputs -%>
-    (Result Http.Error <%$serviceName%><% .Name.TitleUpcase %>Data -> msg)
+    (Result Error <%$serviceName%><% .Name.TitleUpcase %>Data -> msg)
     -> Cmd msg
 
     <%- else -%>
-    (Result Http.Error () -> msg) 
+    (Result Error () -> msg)
     -> Cmd msg
     <%- end %> 
-<% $serviceName.TitleDowncase %><%.Name%><% range .Inputs %> <%.Name | safeVarName%><%end%> toMsg =
+<% $serviceName.TitleDowncase %><%.Name%> (Config config)<% range .Inputs %> <%.Name | safeVarName%><%end%> toMsg =
     <%- if or .Inputs .Outputs%>
     let
         <%- if .Inputs%>
@@ -39,25 +59,33 @@ type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
         decoder =
             Decode.succeed <%$serviceName%><% .Name.TitleUpcase %>Data
             <%- range .Outputs %>
-                |> andMap (Decode.<%if .Optional%>optionalField<%else%>field<%end%> "<%.Name%>" <%.Type | decoderType%>)
+                |> andMap (Decode.<%if .Optional%>decodeOptionalField<%else%>field<%end%> "<%.Name%>" <%.Type | typeDecoder%>)
             <%- end %>              
         <%- end%>        
     in
     <%- end%>
-    Http.post
-        { url = "/rpc/<%$serviceName%>/<%.Name%>"
-        <%- if .Inputs %> 
+
+    request config
+        { method = "POST"
+        , headers = []
+        , url = config.baseUrl ++ "/rpc/<%$serviceName%>/<%.Name%>"
+        <%- if .Inputs %>
         , body = Http.jsonBody encoder
         <%- else %>
         , body = Http.jsonBody (Encode.object [])
         <%- end %>
         <%- if .Outputs %>
-        , expect = Http.expectJson toMsg decoder
+        , expect = expectJson toMsg decoder
         <%- else %>
         , expect = Http.expectWhatever toMsg
         <%- end %>
+        , timeout = Nothing
+        , tracker = Nothing
         }
+
 <% end %>     
 <%- end %>   
 <%- end %>    
-<%- end %>    
+<%- end %>
+
+

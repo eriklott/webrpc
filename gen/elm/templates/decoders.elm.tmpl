@@ -10,7 +10,7 @@
         enumDecoder s =
             case s of
                 <%- range .Fields %>
-                "<%.Value%>" ->
+                "<%.Name%>" ->
                     Decode.succeed <%$enumName%><%.Name%>
                 <%- end%> 
                 _ ->
@@ -22,7 +22,7 @@
 <%.Name | messageDecoderName %> =
     Decode.succeed <%.Name%>
     <%- range .Fields %>
-        |> andMap (<%if .Optional%>optionalField<%else%>Decode.field<%end%> "<%. | exportedJSONField%>" <%.Type | decoderType%>)
+        |> andMap (<%if .Optional%>decodeOptionalField<%else%>Decode.field<%end%> "<%. | exportedJSONField%>" <%.Type | typeDecoder%>)
     <%- end %>
 <% end %>
 <%- end %>

@@ -5,24 +5,46 @@ andMap : Decoder a -> Decoder (a -> b) -> Decoder b
 andMap =
     Decode.map2 (|>)
 
-optionalField : String -> Decoder a -> Decoder (Maybe a)
-optionalField fieldName decoder =
+
+decodeOptionalField : String -> Decoder a -> Decoder (Maybe a)
+decodeOptionalField fieldName decoder =
     let
         finishDecoding json =
             case Decode.decodeValue (Decode.field fieldName Decode.value) json of
                 Ok val ->
-                    Decode.field fieldName (Decode.nullable decoder)
+                    Decode.map Just (Decode.field fieldName decoder)
 
                 Err _ ->
                     Decode.succeed Nothing
     in
-    Decode.value
-        |> Decode.andThen finishDecoding
+    Decode.oneOf
+        [ Decode.field fieldName (Decode.null Nothing)
+        , Decode.value |> Decode.andThen finishDecoding
+        ]
+
 
 encodeMaybe : (a -> Encode.Value) -> Maybe a -> Encode.Value
 encodeMaybe encoder =
     Maybe.map encoder >> Maybe.withDefault Encode.null
 
+
+decodeTimestamp : Decode.Decoder Time.Posix
+decodeTimestamp =
+    Decode.string
+        |> Decode.andThen
+            (\timestampStr ->
+                case Iso8601.toTime timestampStr of
+                    Ok posix ->
+                        Decode.succeed posix
+
+                    Err _ ->
+                        Decode.fail ("failed to decode iso8601 timestamp : '" ++ timestampStr)
+            )
+
+
+encodeTimestamp : Time.Posix -> Encode.Value
+encodeTimestamp posix =
+    Encode.string (Iso8601.fromTime posix)
 
 
 <% end %> 

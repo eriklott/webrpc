@@ -9,7 +9,7 @@
     case <%.Name.TitleDowncase%> of
     <%- range .Fields %>
         <%$enumName%><%.Name%> ->
-            Encode.string "<%.Value%>"
+            Encode.string "<%.Name%>"
     <% end%> 
 <%- else if .Type | isStruct %>
 <%- $messageVarName := .Name.TitleDowncase %>

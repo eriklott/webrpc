@@ -22,44 +22,80 @@ var fieldTypeMap = map[schema.DataType]string{
 	schema.T_Float32:   "Float",
 	schema.T_Float64:   "Float",
 	schema.T_String:    "String",
-	schema.T_Timestamp: "String",
+	schema.T_Timestamp: "Time.Posix",
 	schema.T_Bool:      "Bool",
 }
 
-var decoderTypeMap = map[schema.DataType]string{
-	schema.T_Uint:      "int",
-	schema.T_Uint8:     "int",
-	schema.T_Uint16:    "int",
-	schema.T_Uint32:    "int",
-	schema.T_Uint64:    "int",
-	schema.T_Int:       "int",
-	schema.T_Int8:      "int",
-	schema.T_Int16:     "int",
-	schema.T_Int32:     "int",
-	schema.T_Int64:     "int",
-	schema.T_Float32:   "float",
-	schema.T_Float64:   "float",
-	schema.T_String:    "string",
-	schema.T_Timestamp: "string",
-	schema.T_Bool:      "bool",
+//var decoderTypeMap = map[schema.DataType]string{
+//	schema.T_Uint:      "int",
+//	schema.T_Uint8:     "int",
+//	schema.T_Uint16:    "int",
+//	schema.T_Uint32:    "int",
+//	schema.T_Uint64:    "int",
+//	schema.T_Int:       "int",
+//	schema.T_Int8:      "int",
+//	schema.T_Int16:     "int",
+//	schema.T_Int32:     "int",
+//	schema.T_Int64:     "int",
+//	schema.T_Float32:   "float",
+//	schema.T_Float64:   "float",
+//	schema.T_String:    "string",
+//	schema.T_Timestamp: "string",
+//	schema.T_Bool:      "bool",
+//}
+
+var typeDecoderMap = map[schema.DataType]string{
+	schema.T_Uint:      "Decode.int",
+	schema.T_Uint8:     "Decode.int",
+	schema.T_Uint16:    "Decode.int",
+	schema.T_Uint32:    "Decode.int",
+	schema.T_Uint64:    "Decode.int",
+	schema.T_Int:       "Decode.int",
+	schema.T_Int8:      "Decode.int",
+	schema.T_Int16:     "Decode.int",
+	schema.T_Int32:     "Decode.int",
+	schema.T_Int64:     "Decode.int",
+	schema.T_Float32:   "Decode.float",
+	schema.T_Float64:   "Decode.float",
+	schema.T_String:    "Decode.string",
+	schema.T_Timestamp: "decodeTimestamp",
+	schema.T_Bool:      "Decode.bool",
 }
 
-var encoderTypeMap = map[schema.DataType]string{
-	schema.T_Uint:      "int",
-	schema.T_Uint8:     "int",
-	schema.T_Uint16:    "int",
-	schema.T_Uint32:    "int",
-	schema.T_Uint64:    "int",
-	schema.T_Int:       "int",
-	schema.T_Int8:      "int",
-	schema.T_Int16:     "int",
-	schema.T_Int32:     "int",
-	schema.T_Int64:     "int",
-	schema.T_Float32:   "float",
-	schema.T_Float64:   "float",
-	schema.T_String:    "string",
-	schema.T_Timestamp: "string",
-	schema.T_Bool:      "bool",
+//var encoderTypeMap = map[schema.DataType]string{
+//	schema.T_Uint:      "int",
+//	schema.T_Uint8:     "int",
+//	schema.T_Uint16:    "int",
+//	schema.T_Uint32:    "int",
+//	schema.T_Uint64:    "int",
+//	schema.T_Int:       "int",
+//	schema.T_Int8:      "int",
+//	schema.T_Int16:     "int",
+//	schema.T_Int32:     "int",
+//	schema.T_Int64:     "int",
+//	schema.T_Float32:   "float",
+//	schema.T_Float64:   "float",
+//	schema.T_String:    "string",
+//	schema.T_Timestamp: "string",
+//	schema.T_Bool:      "bool",
+//}
+
+var typeEncoderMap = map[schema.DataType]string{
+	schema.T_Uint:      "Encode.int",
+	schema.T_Uint8:     "Encode.int",
+	schema.T_Uint16:    "Encode.int",
+	schema.T_Uint32:    "Encode.int",
+	schema.T_Uint64:    "Encode.int",
+	schema.T_Int:       "Encode.int",
+	schema.T_Int8:      "Encode.int",
+	schema.T_Int16:     "Encode.int",
+	schema.T_Int32:     "Encode.int",
+	schema.T_Int64:     "Encode.int",
+	schema.T_Float32:   "Encode.float",
+	schema.T_Float64:   "Encode.float",
+	schema.T_String:    "Encode.string",
+	schema.T_Timestamp: "encodeTimestamp",
+	schema.T_Bool:      "Encode.bool",
 }
 
 func messageDecoderName(v schema.VarName) string {
@@ -171,17 +207,35 @@ func encoderTypeRec(in *schema.VarType) (string, error) {
 	case schema.T_Struct:
 		return messageEncoderName(in.Struct.Message.Name), nil
 	default:
-		if decoderTypeMap[in.Type] != "" {
-			return "Encode." + decoderTypeMap[in.Type], nil
+		if typeEncoderMap[in.Type] != "" {
+			return typeEncoderMap[in.Type], nil
 		}
 	}
 	return "", fmt.Errorf("could not represent encoder: %#v", in)
 }
 
-func decoderType(in *schema.VarType) (string, error) {
+//func decoderType(in *schema.VarType) (string, error) {
+//	switch in.Type {
+//	case schema.T_List:
+//		z, err := decoderType(in.List.Elem)
+//		if err != nil {
+//			return "", err
+//		}
+//		return "(Decode.list " + z + ")", nil
+//	case schema.T_Struct:
+//		return messageDecoderName(in.Struct.Message.Name), nil
+//	default:
+//		if decoderTypeMap[in.Type] != "" {
+//			return "Decode." + decoderTypeMap[in.Type], nil
+//		}
+//	}
+//	return "", fmt.Errorf("could not represent decoder: %#v", in)
+//}
+
+func typeDecoder(in *schema.VarType) (string, error) {
 	switch in.Type {
 	case schema.T_List:
-		z, err := decoderType(in.List.Elem)
+		z, err := typeDecoder(in.List.Elem)
 		if err != nil {
 			return "", err
 		}
@@ -189,8 +243,8 @@ func decoderType(in *schema.VarType) (string, error) {
 	case schema.T_Struct:
 		return messageDecoderName(in.Struct.Message.Name), nil
 	default:
-		if decoderTypeMap[in.Type] != "" {
-			return "Decode." + decoderTypeMap[in.Type], nil
+		if typeDecoderMap[in.Type] != "" {
+			return typeDecoderMap[in.Type], nil
 		}
 	}
 	return "", fmt.Errorf("could not represent decoder: %#v", in)
@@ -199,7 +253,11 @@ func decoderType(in *schema.VarType) (string, error) {
 func exposingDef(in *schema.WebRPCSchema) string {
 	exposedNames := []string{}
 	for _, message := range in.Messages {
-		exposedNames = append(exposedNames, message.Name.TitleUpcase())
+		if isEnum(message.Type) {
+			exposedNames = append(exposedNames, message.Name.TitleUpcase()+"(..)")
+		} else {
+			exposedNames = append(exposedNames, message.Name.TitleUpcase())
+		}
 	}
 	for _, service := range in.Services {
 		for _, method := range service.Methods {
@@ -243,13 +301,14 @@ func commaAfterFirst(index int) string {
 }
 
 var templateFuncMap = map[string]interface{}{
-	"fieldType":                 fieldType,
-	"fieldTypeDef":              fieldTypeDef,
-	"isStruct":                  isStruct,
-	"isEnum":                    isEnum,
-	"capitalizeName":            capitalizeName,
-	"exportedJSONField":         exportedJSONField,
-	"decoderType":               decoderType,
+	"fieldType":         fieldType,
+	"fieldTypeDef":      fieldTypeDef,
+	"isStruct":          isStruct,
+	"isEnum":            isEnum,
+	"capitalizeName":    capitalizeName,
+	"exportedJSONField": exportedJSONField,
+	//"decoderType":               decoderType,
+	"typeDecoder":               typeDecoder,
 	"methodArgumentEncoderType": methodArgumentEncoderType,
 	"messageFieldEncoderType":   messageFieldEncoderType,
 	"messageDecoderName":        messageDecoderName,

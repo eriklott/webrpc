@@ -1,5 +1,5 @@
 <%- define "proto" -%>
-module <%.TargetOpts.PkgName%> exposing (<%.WebRPCSchema | exposingDef%>)
+module <%.TargetOpts.PkgName%> exposing (Config, configure, defaultConfiguration, Error(..), ErrorResponse, <%.WebRPCSchema | exposingDef%>)
 
 {- <%.Name%> <%.SchemaVersion%>
   --
@@ -8,9 +8,43 @@ module <%.TargetOpts.PkgName%> exposing (<%.WebRPCSchema | exposingDef%>)
 -}
 
 import Http
+import Iso8601
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Time
 
+
+
+-- CONFIG
+
+
+type Config
+  = Config ConfigModel
+
+
+type alias ConfigModel =
+  { baseUrl : String
+  , withCredentials : Bool
+  }
+
+
+configure :
+  { baseUrl : String
+  , withCredentials : Bool
+  }
+  -> Config
+configure impl =
+  Config impl
+
+
+defaultConfiguration : Config
+defaultConfiguration =
+  Config
+    { baseUrl = ""
+    , withCredentials = False
+    }
+
+<%template "error" .%>
 <%template "types" .%>
 <%template "decoders" .%>
 <%template "encoders" .%>
