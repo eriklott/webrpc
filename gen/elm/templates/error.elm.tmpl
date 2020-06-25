@@ -26,6 +26,33 @@ errorResponseDecoder =
         |> andMap (Decode.field "msg" Decode.string)
         |> andMap (Decode.field "error" Decode.string)
 
+
+expectWhatever : (Result Error () -> msg) -> Http.Expect msg
+expectWhatever toMsg =
+    Http.expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadUrl_ url ->
+                    Err (BadUrl url)
+
+                Http.Timeout_ ->
+                    Err Timeout
+
+                Http.NetworkError_ ->
+                    Err NetworkError
+
+                Http.BadStatus_ metadata body ->
+                    case Decode.decodeString errorResponseDecoder body of
+                        Ok errorResponse ->
+                            Err (BadStatus metadata.statusCode errorResponse)
+
+                        Err err ->
+                            Err (BadBody (Decode.errorToString err))
+
+                Http.GoodStatus_ metadata body ->
+                    Ok ()
+
+
 expectJson : (Result Error a -> msg) -> Decoder a -> Http.Expect msg
 expectJson toMsg decoder =
     Http.expectStringResponse toMsg <|
@@ -55,7 +82,6 @@ expectJson toMsg decoder =
 
                         Err err ->
                             Err (BadBody (Decode.errorToString err))
-
 
 
 <%- end %>
