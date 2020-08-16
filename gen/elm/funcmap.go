@@ -261,8 +261,8 @@ func exposingDef(in *schema.WebRPCSchema) string {
 	}
 	for _, service := range in.Services {
 		for _, method := range service.Methods {
-			if len(method.Outputs) > 0 {
-				exposedNames = append(exposedNames, service.Name.TitleUpcase()+method.Name.TitleUpcase()+"Data")
+			if len(method.Outputs) > 1 {
+				exposedNames = append(exposedNames, service.Name.TitleUpcase()+method.Name.TitleUpcase()+"Response")
 			}
 			exposedNames = append(exposedNames, service.Name.TitleDowncase()+method.Name.TitleUpcase())
 		}
