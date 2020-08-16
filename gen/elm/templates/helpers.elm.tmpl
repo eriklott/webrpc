@@ -1,6 +1,23 @@
 <%define "helpers"%>
 -- HELPERS
 
+request
+    : ConfigModel
+    -> { method : String
+       , headers : List Http.Header
+       , url : String
+       , body : Http.Body
+       , expect : Http.Expect msg
+       , timeout : Maybe Float
+       , tracker : Maybe String
+       }
+    -> Cmd msg
+request config =
+    if config.withCredentials then
+        Http.riskyRequest
+    else
+        Http.request
+
 andMap : Decoder a -> Decoder (a -> b) -> Decoder b
 andMap =
     Decode.map2 (|>)

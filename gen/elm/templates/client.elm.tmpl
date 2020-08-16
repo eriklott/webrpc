@@ -3,65 +3,57 @@
 
 -- CLIENT
 
-request
-    : ConfigModel
-    -> { method : String
-       , headers : List Http.Header
-       , url : String
-       , body : Http.Body
-       , expect : Http.Expect msg
-       , timeout : Maybe Float
-       , tracker : Maybe String
-       }
-    -> Cmd msg
-request config =
-    if config.withCredentials then
-        Http.riskyRequest
-    else
-        Http.request
-
-
-<% range .Services %>
+<%- range .Services -%>
 <%- $serviceName := .Name -%>
-<%- range .Methods %>
-<%- if .Outputs%>
-type alias <%$serviceName%><% .Name.TitleUpcase %>Data =
-    {<% range $index, $element := .Outputs %><%commaAfterFirst $index%> <%if .Optional%>Maybe <%end%><%.Name | safeVarName%> : <% fieldType .Type %> 
-    <%end%>}  
-<%- end%>
+<%- range .Methods -%>
+
+<% if gt (len .Outputs) 1 %>
+type alias <% $serviceName %><% .Name.TitleUpcase %>Response =
+    {<% range $index, $element := .Outputs %><% commaAfterFirst $index %> <%if .Optional%>Maybe <% end %><%.Name | safeVarName%> : <% fieldType .Type %> 
+    <% end %>}  
+<% end %>
 
 <% $serviceName.TitleDowncase %><%.Name%> :
     Config
     -> <% range $index, $element := .Inputs %>
-    <%- if $index | ne 0 %>-> <%end%><%if .Optional%>Maybe <%end%><% .Type | fieldType %>
-    <%end%>
+    <%- if $index | ne 0 %>-> <% end %><%if .Optional%>Maybe <% end %><% .Type | fieldType %>
+    <% end %>
     
-    <%- if .Inputs%>-> <%end%>
+    <%- if .Inputs%>-> <% end %>
     
-    <%- if .Outputs -%>
-    (Result Error <%$serviceName%><% .Name.TitleUpcase %>Data -> msg)
+    <%- if gt (len .Outputs) 1 -%>
+    (Result Error <%$serviceName%><% .Name.TitleUpcase %>Response -> msg)
     -> Cmd msg
-
+    <%- else if .Outputs -%>
+    <%- range .Outputs -%>
+    (Result Error <% fieldType .Type %> -> msg)
+    -> Cmd msg
+    <%- end -%>
     <%- else -%>
     (Result Error () -> msg)
     -> Cmd msg
     <%- end %> 
-<% $serviceName.TitleDowncase %><%.Name%> (Config config)<% range .Inputs %> <%.Name | safeVarName%><%end%> toMsg =
+<% $serviceName.TitleDowncase %><%.Name%> (Config config)<% range .Inputs %> <%.Name | safeVarName%><% end %> toMsg =
     <%- if or .Inputs .Outputs%>
     let
-        <%- if .Inputs%>
+        <%- if .Inputs %>
         encoder =
             Encode.object
                 [<% range $index, $element := .Inputs %><% commaAfterFirst $index %> ( "<%.Name%>", <% methodArgumentEncoderType . %> <%.Name | safeVarName%> )
-                <%end%>]
-        <%end%>
-        <%- if .Outputs%>
+                <% end %>]
+        <% end %>
+        <%- if gt (len .Outputs) 1 %>
         decoder =
-            Decode.succeed <%$serviceName%><% .Name.TitleUpcase %>Data
+            Decode.succeed <%$serviceName%><% .Name.TitleUpcase %>Response
             <%- range .Outputs %>
-                |> andMap (Decode.<%if .Optional%>decodeOptionalField<%else%>field<%end%> "<%.Name%>" <%.Type | typeDecoder%>)
-            <%- end %>              
-        <%- end%>        
+                |> andMap (Decode.<%if .Optional%>decodeOptionalField<%else%>field<% end %> "<%.Name%>" <%.Type | typeDecoder%>)
+            <%- end %> 
+        <% else if eq (len .Outputs) 1 %>
+        <%- range .Outputs %>
+        decoder =
+            Decode.<%if .Optional%>decodeOptionalField<%else%>field<% end %> "<%.Name%>" <%.Type | typeDecoder%>            
+        <%- end -%>    
+        <%- end %>        
     in
     <%- end%>
 
